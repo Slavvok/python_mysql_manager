@@ -1,0 +1,6 @@
+*.pyc
+venv
+db_config
+logs
+application.py
+__pycache__
