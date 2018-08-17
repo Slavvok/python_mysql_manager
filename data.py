@@ -87,6 +87,7 @@ def row(table_name, id):
             inner_list.append(dict[i])
             inner_list.append(id)
             outer_list.append(tuple(inner_list))
+            inner_list = []
 
         print(outer_list)
 
