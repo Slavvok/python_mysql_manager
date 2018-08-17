@@ -3,7 +3,7 @@ from mysql.connector import Error
 import json
 
 
-def conn(query, is_change=False, data=(), is_one = False):
+def conn(query, is_change=False, data=(), is_one = False, keys=[]):
     try:
         conn = mysql.connector.connect(
             host='localhost',
@@ -21,6 +21,14 @@ def conn(query, is_change=False, data=(), is_one = False):
         return
     if not is_change:
         cur.execute(query)
+    if keys:
+        count=0
+        for i in data:
+            cur.execute(query.format(key=keys[count]), i)
+            conn.commit()
+            count += 1
+        cur.close()
+        return
     if is_change:
         cur.executemany(query, data)
         conn.commit()
@@ -54,14 +62,15 @@ def post(table, id, text):
     return conn(query, True, data)
 
 def post_many(table, values):
-    query = "INSERT INTO " + table + " VALUES (%s, %s)"
+    vals = ','.join('%s'.format(i) for i in values[0])
+    query = "INSERT INTO " + table + " VALUES ({})".format(vals)
     print(query)
     print(values)
     return conn(query, True, values)
 
-def update(table, values):
-    query = "UPDATE "+table+" SET %s=%s WHERE id=%s"
-    return conn(query, True, values)
+def update(table, keys, values):
+    query = "UPDATE "+table+" SET {key}=%s WHERE id=%s"
+    return conn(query, True, values, False, keys)
 
 def delete(table, id):
     query = "DELETE FROM "+table+" WHERE id=%s"

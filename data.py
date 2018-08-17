@@ -79,19 +79,18 @@ def row(table_name, id):
             return resp
     if request.method == 'PUT':
         dict = request.get_json()
+        keys = []
         outer_list = []
         inner_list = []
         for i in dict:
-            inner_list.append(str(i))
-            inner_list.append(str(dict[i]))
+            keys.append(i)
+            inner_list.append(dict[i])
             inner_list.append(id)
             outer_list.append(tuple(inner_list))
-        if len(outer_list) == 1:
-            outer_list = outer_list[0];
 
         print(outer_list)
 
-        update(table_name, outer_list)
+        update(table_name, keys, outer_list)
         return "Table updated"
     if request.method == 'DELETE':
         delete(table_name, id)
