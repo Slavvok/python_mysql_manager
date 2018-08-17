@@ -1,22 +1,29 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, abort
 from sql_manager import *
 
 import json
 
 app = Flask('http_server')
 
+
 @app.errorhandler(404)
 def page_not_found(e):
-    resp = Response("404")
+    resp = Response("No record with that id (404)", status=404)
     return resp
 
-@app.route("/<table_name>/", methods=['GET','POST'])
+@app.errorhandler(500)
+def page_not_found(e):
+    resp = Response("INTERNAL SERVER ERROR (500)", status=500)
+    return resp
+
+
+@app.route("/<table_name>/", methods=['GET', 'POST'])
 def table(table_name):
     if request.method == 'GET':
         limit = request.args.get('limit', default=5)
         offset = request.args.get('offset', default=0)
         result = get_items(table_name, limit, offset)
-        resp = Response(result)
+        resp = Response(result, mimetype='application/json')
         return resp
 
     if request.method == 'POST':
@@ -37,6 +44,7 @@ def table(table_name):
         post_many(table_name, list)
         return "Success"
 
+
 @app.route("/")
 def root():
     result = show_tables()
@@ -44,7 +52,8 @@ def root():
     resp.headers['Access-Controll-Allow-Origin']='*'
     return resp
 
-@app.route("/test/", methods = ['GET', 'POST'])
+
+@app.route("/test/", methods=['GET', 'POST'])
 def test():
     if request.method == 'GET':
         return "It's test"
@@ -53,37 +62,41 @@ def test():
         list = []
         for i in dict:
             new_list = []
-            for j in i:
-                new_list.append(i[j])
+            new_list.append(i)
             list.append(tuple(new_list))
         print(list)
         return "Success"
 
+
 @app.route("/<table_name>/<int:id>/", methods=['GET', 'PUT', 'DELETE'])
-def tableE(table_name, id):
+def row(table_name, id):
     if request.method == 'GET':
-        result = get_text(table_name, id)
-        resp = Response(result)
-        return resp
+        result = get_row(table_name, id)
+        if result == '[]':
+            abort(404)
+        else:
+            resp = Response(result, mimetype='application/json')
+            return resp
     if request.method == 'PUT':
         dict = request.get_json()
         outer_list = []
         inner_list = []
         for i in dict:
-            inner_list.append(i)
-            inner_list.append(dict[i])
-            inner_list.append(str(id))
+            inner_list.append(str(i))
+            inner_list.append(str(dict[i]))
+            inner_list.append(id)
             outer_list.append(tuple(inner_list))
         if len(outer_list) == 1:
             outer_list = outer_list[0];
 
         print(outer_list)
 
-        update(table_name, id, outer_list)
+        update(table_name, outer_list)
         return "Table updated"
     if request.method == 'DELETE':
         delete(table_name, id)
         return "Value deleted"
+
 
 if __name__ == '__main__':
     app.run()

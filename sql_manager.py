@@ -1,5 +1,7 @@
 import mysql.connector
+from mysql.connector import Error
 import json
+
 
 def conn(query, is_change=False, data=(), is_one = False):
     try:
@@ -9,17 +11,17 @@ def conn(query, is_change=False, data=(), is_one = False):
             password='',
             database='mysqldb'
         )
-    except Exception:
-        return ("Connection failed")
+    except Error as e:
+        return "Connection failed: " + e
     cur = conn.cursor()
-    if (is_one):
+    if is_one:
         cur.execute(query, data)
         conn.commit()
         cur.close()
         return
-    if (not is_change):
+    if not is_change:
         cur.execute(query)
-    if (is_change):
+    if is_change:
         cur.executemany(query, data)
         conn.commit()
         cur.close()
@@ -41,7 +43,7 @@ def get_items(table, limit, offset):
         table, limit, offset)
     return conn(query)
 
-def get_text(table, id):
+def get_row(table, id):
     query = "SELECT * FROM {} WHERE id={}".format(
         table, id)
     return conn(query)
