@@ -56,13 +56,8 @@ def get_row(table, id):
         table, id)
     return conn(query)
 
-def post(table, id, text):
-    query = "INSERT INTO "+table+" VALUES (%s, %s)"
-    data = (id, text)
-    return conn(query, True, data)
-
-def post_many(table, values):
-    vals = ','.join('%s'.format(i) for i in values[0])
+def post(table, values):
+    vals = ', '.join('%s'.format(i) for i in values[0])
     query = "INSERT INTO " + table + " VALUES ({})".format(vals)
     print(query)
     print(values)

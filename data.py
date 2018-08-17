@@ -31,9 +31,9 @@ def table(table_name):
         list = []
         for i in dict:
             new_list = []
-            if type(i) is dict:
+            if isinstance(i, type({})):
                 for j in i:
-                    new_list.append(str(i[j]))
+                    new_list.append((i[j]))
                 list.append(tuple(new_list))
             else:
                 list.append(dict[i])
@@ -41,7 +41,8 @@ def table(table_name):
             new_list = tuple(list)
             list = []
             list.append(new_list)
-        post_many(table_name, list)
+        print(list)
+        post(table_name, list)
         return "Success"
 
 
@@ -95,7 +96,7 @@ def row(table_name, id):
         return "Table updated"
     if request.method == 'DELETE':
         delete(table_name, id)
-        return "Value deleted"
+        return "Record deleted"
 
 
 if __name__ == '__main__':
